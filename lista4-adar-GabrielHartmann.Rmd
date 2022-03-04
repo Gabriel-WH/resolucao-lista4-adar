@@ -4,13 +4,22 @@ author: "Gabriel Welter Hartmann"
 date: "10/02/2022"
 output: html_document
 editor_options: 
-  chunk_output_type: console
+  chunk_output_type: inline
 ---
 
 ## Pré-requisitos
 
 **Pacotes necessários**
 
+
+```{r setup, include=FALSE}
+#rm(list = ls())
+knitr::opts_chunk$set(echo = TRUE,
+                      comment = "#>",
+                      prompt = FALSE, 
+                      collapse = TRUE, 
+                      include = TRUE)
+```
 
 ```{r}
 library(tidyverse)
@@ -20,6 +29,7 @@ library(scales)
 library(rio)
 library(knitr)
 ```
+
 
 
 
@@ -62,20 +72,27 @@ exerc_1 <- soi %>%
     cols = -YEAR,
     names_to = "mes",
     values_to = "soi",
-    values_transform = list(mes = as.numeric)
+    values_transform = list(mes = as.numeric) # desnecessario se tem o mutate com as.integer abaixo, tanto que se comentares esta linha nao fará efeito no resultado.
   ) %>%
-  rename_with(
+  rename_with( # muito bom!
     .data = .,
     .fn = tolower
   ) %>%
   mutate(
     .data = .,
-    across(mes, as.integer)
+    across(mes, as.integer) # across eh util quando aplicado a mais de uma variavel
   )
 
 glimpse(exerc_1)
 ```
 
+
+```{r jdt-correcao1, echo = FALSE, comment="JDT>"}
+# penalizacoes
+p1 <- 0
+# nota questão 1
+(nq1 <- 1 - p1)
+```
 
 - - -
 
@@ -113,6 +130,13 @@ glimpse(exerc_2)
 ```
 
 
+```{r jdt-correcao2, echo = FALSE, comment="JDT>"}
+# penalizacoes
+p2 <- 0.0
+# nota questão 2
+(nq2 <- 1 - p2)
+```
+
 - - -
 
 
@@ -125,7 +149,26 @@ exerc_3 <- poluentes %>%
 exerc_3
 ```
 
-Não entendi como fazer.
+> Acho que você não entendeu o conceito de [formato arrumado](https://lhmet.github.io/adar-ebook/restrutura%C3%A7%C3%A3o-de-dados-retangulares.html#dados-arrumados). Leia o livro. O resultado esperado seria:
+
+
+```
+#> # A tibble: 3 × 4
+#>   estacao ozone so2   no2  
+#>     <int> <chr> <chr> <chr>
+#> 1       1 1h    1h    <NA> 
+#> 2       2 8h    <NA>  <NA> 
+#> 3       4 <NA>  <NA>  1h
+```
+
+```{r jdt-correcao3, echo = FALSE, comment="JDT>"}
+# penalizacoes
+p3 <- 1
+# nota questão 2
+(nq3 <- 1 - p3)
+```
+
+
 
 - - -
 
@@ -224,11 +267,12 @@ exerc_4b <- dados_sm %>%
     .data = .,
     year,
     .before = month
-  )
+  ) # %>% arrange(year, month, day)  # faltou
 
 glimpse(exerc_4b)
 ```
 
+> JDT: Só faltou você se certificar de que os dados estão cronologicamente ordenados. O que poderia ser feito com `arrange()`.
 
    c. Acrescente uma nova variável `tmed` aos dados de temperatura diária arrumados, obtida da média diária da `tmax` e `tmin`.
 
@@ -242,6 +286,12 @@ exerc_4c <- exerc_4b %>%
 exerc_4c
 ```
 
+
+
+```{r jdt-correcao4, echo = FALSE, comment = "JDT>"}
+p4 <- 0.05
+(nq4 <- 1 - p4)
+```
 
 - - -
 
@@ -266,10 +316,10 @@ exerc_5a
    
 ```{r}
 exerc_5b <- exerc_5a %>%
-  mutate(
-    .data = .,
-    across(ano,mes,dia, .fn = as.character)
-  ) %>%
+  #mutate(
+  #  .data = .,
+  #  across(ano,mes,dia, .fn = as.character)
+  #) %>%
   unite(
     data = .,
     col = "data",
@@ -288,7 +338,7 @@ exerc_5b
    c. Filtre os dados obtidos em **(b)** de forma a descobrir as datas em que as observações de `tmax` ou `tmin` são faltantes. Mostre o **`tibble`** filtrado com as datas e explique o porquê de seus valores. *DICA: quantas observações são esperadas por ano?*. 
    
 ```{r}
-filter(exerc_5b, is.na(tmin) | is.na(tmax))
+filter(exerc_5b, is.na(tmin) | is.na(tmax)) # correto, mas com tantos códigos fica difícil saber qual sua resposta.
 slice(exerc_5b, which(is.na(tmin))+1)
 slice(exerc_5b, which(is.na(tmin))-1)
 
@@ -306,6 +356,10 @@ glimpse(exerc_5c)
 
 Como podemos observar, são 5 datas que possuem dados faltantes. Mas, analisando a saída do recorte das observações antes e depois das datas com dados faltantes, vemos que temos dados faltantes entre as datas de 28 de fevereiro e 1º de março (3 dias de dados faltantes para ser mais específico), bem como entre 30 de abril e 05 de maio (1 dia). O que fica claro é que esse conjunto de dados foi gerado a partir de um comando, uma regra, que considerava que todos o meses têm 31 dias.
 
+```{r jdt-correcao5, echo = FALSE, comment = "JDT>"}
+p5 <- 0
+(nq5 <- 1 - p5)
+```
 
 - - -
 
@@ -357,12 +411,18 @@ exerc_6 <- dados_zorra %>%
   ) %>%
   mutate(
     .data = .,
-    date = strptime(x = date, format = "%d-%m-%Y-%H")
+    date = strptime(x = date, format = "%d-%m-%Y-%H") #
   )
-
 glimpse(exerc_6)
 ```
 
+> JDT: note que a estrutura dos dados não é idêntica ao resultado fornecido. Sua resposta tem date no formato `POSIXlt`. Os dados de referência no formato `dttm`. No curso não foi indicado  o uso da `strptime()` mas da `as.POSICXct()`, como [aqui](https://lhmet.github.io/adar-ebook/outros-tipos-de-dados-derivados.html#datas-e-hor%C3%A1rios).
+
+
+```{r jdt-correcao6, echo = FALSE, comment = "JDT>"}
+p6 <- 1/3
+(nq6 <- 1 - p6)
+```
 
 - - -
 
@@ -390,6 +450,10 @@ glimpse(exerc_7)
 ```
 
 
+```{r jdt-correcao7, echo = FALSE, comment = "JDT>"}
+p7 <- 0
+(nq7 <- 1 - p7)
+```
 - - -
 
 
@@ -429,7 +493,11 @@ exerc_8b <- left_join(
 glimpse(exerc_8b)
 ```
 
-  
+```{r jdt-correcao8, echo = FALSE, comment = "JDT>"}
+p8 <- 0.0
+(nq8 <- 1 - p8)
+```
+
 - - - 
 
 
@@ -450,6 +518,44 @@ exerc_9 <- group_by(
 glimpse(exerc_9)
 ```
 
+> Faltou precisão no seus cálculos. Note a diferença abaixo.
+
+
+```{r jdt-correcao9, echo = FALSE, comment = "JDT>"}
+p9 <- 1/3
+(nq9 <- 1 - p9)
+```
+
+
+```{r check-9}
+por_ano <- dados_rs_08_16 %>% 
+  #filter(site == "A899") %>%
+  select(site, date) %>%
+  group_by(site, year = year(date)) %>%
+  summarise(
+    inicio = min(date),
+    fim = max(date),
+    #periodo = as.vector((fim - inicio)/365.25)
+    fracao_dias_com_obs = n()/24, #
+    dias_calendario = ifelse(unique(year(date)) %% 4 == 0, 366, 365), 
+    periodo = fracao_dias_com_obs/dias_calendario,
+    intervalo = time_length(interval(inicio, fim), "year"),
+    .groups = "drop"
+    ) 
+por_site <- por_ano %>%
+  group_by(site) %>%
+ summarise(inicio = min(inicio), 
+           fim = max(fim), 
+           dias_com_obs = sum(fracao_dias_com_obs), 
+           dias_calendario = sum(dias_calendario),
+           periodo = round(sum(periodo), 2),
+           periodo_interv = round(sum(intervalo), 2),
+           .groups = "drop"
+           ) 
+glimpse(por_site)
+# qualquer metodo estaria correto, pois teriam mesmo resultado
+select(por_site, inicio, fim, periodo, periodo_interv)
+```
 
 - - -
 
@@ -474,6 +580,46 @@ exerc_10 <- dados_rs_08_16 %>%
 glimpse(exerc_10)
 ```
 
+> JDT: uma dica valiosa de programação: "Do not repeat yourself." Sempre que perceber padrões de repetição, certamente significa que há uma forma mais eficaz de codificar. No caso:
+
+
+```{r}
+perc_valid <- function(x){
+  as.integer(mean(!is.na(x)) * 100)
+}
+  
+exerc_10_dnry <- dados_rs_08_16 %>%
+  group_by(
+  .data = .,
+  site
+  ) %>%
+  summarise(
+    .data = .,
+    tair = perc_valid(tair),
+    rh = perc_valid(rh),
+    prec = perc_valid(prec),
+    rg = perc_valid(rg),
+    ws = perc_valid(ws)
+  )
+
+glimpse(exerc_10_dnry)
+```
+
+>JDT: ainda há repetição! Então, podemos usar `summarise_at()` ou `summarise(across())`.
+
+
+```{r}
+validos <- dados_rs_08_16 %>%
+  group_by(site) %>%
+  summarise(across(tair:ws, perc_valid)) 
+glimpse(validos)
+```
+
+
+```{r jdt-correcao10, echo = FALSE, comment = "JDT>"}
+p10 <- 0.05
+(nq10 <- 1 - p10)
+```
 
 - - -
 
@@ -494,7 +640,23 @@ exerc_11 <- exerc_10 %>%
 glimpse(exerc_11)
 ```
 
-  
+
+```{r jdt-correcao11, echo = FALSE, comment = "JDT>"}
+p11 <- 0
+(nq11 <- 1 - p11)
+```
+
+
+```{r jdt-dica11, echo = FALSE, comment = "JDT>"}
+exerc_10 %>% 
+  # mutate(., disp_med = rowMeans(.[,-1])) %>% # possibilidade 1
+  rowwise(site) %>%
+  #mutate(disp_med = mean(c(tair, rh, prec, rg, ws))) %>% # possibilidade 2
+  mutate(disp_med = mean(c_across(tair:ws))) %>% # # possibilidade 3 - best
+  arrange(desc(disp_med))
+```
+
+
 - - -
 
 
@@ -522,7 +684,7 @@ exerc_12 <- dados_rs_08_16 %>%
   summarise(
     .data = .,
     tair_med = mean(tair, na.rm = TRUE),
-    disp_med = 100 * sum(!is.na(tair)) / n()
+    disp_med = 100 * sum(!is.na(tair)) / n() # DO not repeat yourself
   ) %>%
   rename(
     .data = .,
@@ -530,6 +692,11 @@ exerc_12 <- dados_rs_08_16 %>%
   )
 
 glimpse(exerc_12)
+```
+
+```{r jdt-correcao12, echo = FALSE, comment = "JDT>"}
+p12 <- 0
+(nq12 <- 1 - p12)
 ```
 
 - - -
@@ -611,11 +778,16 @@ exerc_13c <- exerc_13b %>%
 glimpse(exerc_13c)
 ```
 
+```{r jdt-correcao13, echo = FALSE, comment = "JDT>"}
+p13 <- 0
+(nq13 <- 1 - p13)
+```
 
 - - -
 
 
 14. Neste exercício aplicaremos um controle de qualidade básico de dados meteorológicos. Você irá verificar se nos dados da EMA de Santa Maria (A803, mesmos dados do item **a** do exercício anterior) ocorreram casos em que a temperatura máxima (mínima) diária foi acima (abaixo) dos recordes históricos registrados pela estação meteorológica convencional do INMET de Santa Maria (site 83936). Os recordes históricos de temperatura máxima e mínima estão disponíveis nos dados `recordes_temp` para cada mês do ano. Você deve obter os casos suspeitos na estrutura conforme abaixo.
+
 ```
 # A tibble: 8 x 7
   date                 tmax  tmin   mes site 
@@ -682,5 +854,22 @@ exerc_14 <- dados_rs_08_16 %>%
 exerc_14
 
 glimpse(exerc_14)
+```
+
+
+```{r jdt-correcao14, echo = FALSE, comment = "JDT>"}
+p14 <- 0.5
+(nq14 <- 1 - p14)
+```
+
+
+```{r jdt-nota-final, comment = "JDT>", echo=FALSE}
+# requer conexão de internet
+source("https://gist.githubusercontent.com/lhmet/3ddfc43bcf796c81ecfd9bb93f5f5dc2/raw/b489a6bb4d948472afa5068256b7869a7997e109/aux-funs-list-correction")
+coleta_notas
+# verificação de autoria
+nota <- round((sum(coleta_notas)/length(coleta_notas) * 10), 1)
+message("Nota: ", nota)
+
 ```
 
